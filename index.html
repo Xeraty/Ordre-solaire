@@ -78,48 +78,88 @@
 
   <!-- Script pour envoyer les contrats vers Google Sheets -->
   <script>
-    const form = document.getElementById('contratForm');
-    const listeContrats = document.getElementById('listeContrats');
+  const form = document.getElementById('contratForm');
+  const listeContrats = document.getElementById('listeContrats');
 
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
+  // Fonction pour supprimer un contrat (demande mot de passe)
+  function supprimerContrat(titre) {
+    const code = prompt("Entrez le code de gradé Solaris pour supprimer ce contrat :");
 
-      // Récupération des données
-      const data = {
-        titre: document.getElementById('titre').value,
-        date: document.getElementById('date').value,
-        contenu: document.getElementById('contenu').value
-      };
+    if (!code) {
+      alert("Suppression annulée.");
+      return;
+    }
 
-      // URL de ton Web App Google Script (corrige bien ici avec TON lien /exec)
-      const url = "https://script.google.com/macros/s/AKfycbxfVVJezv7CQg2miNVhvfAQ1O9SRJ1eU-yATW1GE1ES3jp8DhJjkSsyWOAsHruJWcZ9gQ/exec";
+    if (confirm("Voulez-vous vraiment supprimer ce contrat ?")) {
+      const url = "https://script.google.com/macros/s/AKfycbzdLMFEeRsETJeFHev5WywDH5ksW-SDsIGp3lD9-H8oEeWNs6yHLH8nnBMX_OitVvs6bA/exec"; // Mets ton URL Google Script ici
 
-      // Envoi vers Google Sheets
       fetch(url, {
         method: 'POST',
-        body: JSON.stringify(data)
+        body: JSON.stringify({ action: "delete", titre: titre, code: code })
       })
       .then(res => res.json())
       .then(response => {
-        alert("Contrat ajouté avec succès !");
+        if (response.result === "success") {
+          alert("Contrat supprimé avec succès !");
+          location.reload(); // Recharge la page pour rafraîchir la liste
+        } else {
+          alert("Erreur : " + response.message);
+        }
+      })
+      .catch(err => {
+        alert("Erreur : " + err);
+      });
+    }
+  }
 
-        // Afficher directement le contrat sur la page
-        const contratDiv = document.createElement('div');
-        contratDiv.classList = "bg-gray-900 border border-yellow-600 p-6 rounded-lg shadow";
-        contratDiv.innerHTML = `
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    // Récupération des données
+    const data = {
+      titre: document.getElementById('titre').value,
+      date: document.getElementById('date').value,
+      contenu: document.getElementById('contenu').value
+    };
+
+    // URL de ton Web App Google Script (corrige bien ici avec TON lien /exec)
+    const url = "https://script.google.com/macros/s/AKfycbxfVVJezv7CQg2miNVhvfAQ1O9SRJ1eU-yATW1GE1ES3jp8DhJjkSsyWOAsHruJWcZ9gQ/exec";
+
+    // Envoi vers Google Sheets
+    fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(response => {
+      alert("Contrat ajouté avec succès !");
+
+      // Afficher directement le contrat sur la page avec un bouton supprimer
+      const contratDiv = document.createElement('div');
+      contratDiv.classList = "bg-gray-900 border border-yellow-600 p-6 rounded-lg shadow flex justify-between items-start";
+
+      contratDiv.innerHTML = `
+        <div>
           <h5 class="text-xl font-bold text-yellow-400">${data.titre}</h5>
           <p class="text-sm text-gray-400 mb-2">Date : ${data.date}</p>
           <p>${data.contenu}</p>
-        `;
-        listeContrats.appendChild(contratDiv);
+        </div>
+        <button onclick="supprimerContrat('${data.titre}')" 
+          class="ml-6 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+          Supprimer
+        </button>
+      `;
 
-        form.reset();
-      })
-      .catch(err => {
-        alert("Erreur lors de l’ajout : " + err);
-      });
+      listeContrats.appendChild(contratDiv);
+
+      form.reset();
+    })
+    .catch(err => {
+      alert("Erreur lors de l’ajout : " + err);
     });
-  </script>
+  });
+</script>
+
 
   <!-- Règlement -->
   <section id="regles" class="py-20 container mx-auto px-6">
