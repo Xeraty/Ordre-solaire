@@ -81,6 +81,8 @@
   const form = document.getElementById('contratForm');
   const listeContrats = document.getElementById('listeContrats');
 
+  const url = "https://script.google.com/macros/s/AKfycbwqmzuH3Y0kbCuaLaCKp81w_RgC3l3Cks8GXdFzT-Tv-l-6cTTAxA5NJulOXg6lvyLYbw/exec";
+
   // Fonction pour supprimer un contrat (demande mot de passe)
   function supprimerContrat(titre) {
     const code = prompt("Entrez le code de gradé Solaris pour supprimer ce contrat :");
@@ -91,8 +93,6 @@
     }
 
     if (confirm("Voulez-vous vraiment supprimer ce contrat ?")) {
-      const url = "https://script.google.com/macros/s/AKfycbzdLMFEeRsETJeFHev5WywDH5ksW-SDsIGp3lD9-H8oEeWNs6yHLH8nnBMX_OitVvs6bA/exec"; // Mets ton URL Google Script ici
-
       fetch(url, {
         method: 'POST',
         body: JSON.stringify({ action: "delete", titre: titre, code: code })
@@ -101,7 +101,7 @@
       .then(response => {
         if (response.result === "success") {
           alert("Contrat supprimé avec succès !");
-          location.reload(); // Recharge la page pour rafraîchir la liste
+          chargerContrats(); // recharger sans refresh complet
         } else {
           alert("Erreur : " + response.message);
         }
@@ -112,20 +112,52 @@
     }
   }
 
+  // Fonction pour charger les contrats existants
+  function chargerContrats() {
+    listeContrats.innerHTML = "<p class='text-gray-400'>Chargement des contrats...</p>";
+
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        listeContrats.innerHTML = "";
+        if (data.length === 0) {
+          listeContrats.innerHTML = "<p class='text-gray-400'>Aucun contrat pour le moment.</p>";
+          return;
+        }
+
+        data.forEach(contrat => {
+          const contratDiv = document.createElement('div');
+          contratDiv.classList = "bg-gray-900 border border-yellow-600 p-6 rounded-lg shadow flex justify-between items-start";
+
+          contratDiv.innerHTML = `
+            <div>
+              <h5 class="text-xl font-bold text-yellow-400">${contrat.titre}</h5>
+              <p class="text-sm text-gray-400 mb-2">Date : ${contrat.date}</p>
+              <p>${contrat.contenu}</p>
+            </div>
+            <button onclick="supprimerContrat('${contrat.titre}')" 
+              class="ml-6 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+              Supprimer
+            </button>
+          `;
+          listeContrats.appendChild(contratDiv);
+        });
+      })
+      .catch(err => {
+        listeContrats.innerHTML = "<p class='text-red-500'>Erreur de chargement des contrats.</p>";
+      });
+  }
+
+  // Envoi d’un nouveau contrat
   form.addEventListener('submit', function(e) {
     e.preventDefault();
 
-    // Récupération des données
     const data = {
       titre: document.getElementById('titre').value,
       date: document.getElementById('date').value,
       contenu: document.getElementById('contenu').value
     };
 
-    // URL de ton Web App Google Script (corrige bien ici avec TON lien /exec)
-    const url = "https://script.google.com/macros/s/AKfycbxfVVJezv7CQg2miNVhvfAQ1O9SRJ1eU-yATW1GE1ES3jp8DhJjkSsyWOAsHruJWcZ9gQ/exec";
-
-    // Envoi vers Google Sheets
     fetch(url, {
       method: 'POST',
       body: JSON.stringify(data)
@@ -133,32 +165,18 @@
     .then(res => res.json())
     .then(response => {
       alert("Contrat ajouté avec succès !");
-
-      // Afficher directement le contrat sur la page avec un bouton supprimer
-      const contratDiv = document.createElement('div');
-      contratDiv.classList = "bg-gray-900 border border-yellow-600 p-6 rounded-lg shadow flex justify-between items-start";
-
-      contratDiv.innerHTML = `
-        <div>
-          <h5 class="text-xl font-bold text-yellow-400">${data.titre}</h5>
-          <p class="text-sm text-gray-400 mb-2">Date : ${data.date}</p>
-          <p>${data.contenu}</p>
-        </div>
-        <button onclick="supprimerContrat('${data.titre}')" 
-          class="ml-6 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-          Supprimer
-        </button>
-      `;
-
-      listeContrats.appendChild(contratDiv);
-
       form.reset();
+      chargerContrats(); // recharge la liste avec le nouveau contrat
     })
     .catch(err => {
       alert("Erreur lors de l’ajout : " + err);
     });
   });
+
+  // Charger les contrats au démarrage
+  window.onload = chargerContrats;
 </script>
+
 
 
   <!-- Règlement -->
