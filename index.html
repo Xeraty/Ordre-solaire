@@ -44,11 +44,7 @@
         Dans le cadre de la Guerre Sainte, Solaris et Lunaris scellent une alliance sacrée, établissant des règles 
         de contrôle des points et un pacte de coopération face à toute faction tierce.
       </p>
-      <p class="mb-6"></p>
-       Contrat : https://docs.google.com/document/d/1r2TwLsNoEyaHbq7mjLM20R3IohjNPjXKdpv1-T2omEA/edit?tab=t.0#heading=h.suasm5lb3fx7
-      </p>
-      <p class="mb-6"></p>
-      <ol class="list-decimal ml-6 space-y-2">
+      <ol class="list-decimal ml-6 space-y-2 mb-6">
         <li>Chaque faction choisit deux points stratégiques.</li>
         <li>Les autres sont décidés par duels équitables.</li>
         <li>Interdiction d’annexion des points acquis.</li>
@@ -58,7 +54,72 @@
       </ol>
       <p class="italic text-gray-400 mt-6">Fait et signé à New York City, Zone Industrielle, le 26/07/2025.</p>
     </div>
+
+    <!-- Formulaire pour ajouter un contrat -->
+    <div class="bg-gray-900 border border-yellow-600 p-8 rounded-lg shadow-lg mt-12">
+      <h4 class="text-2xl text-yellow-400 mb-4">Ajouter un Contrat</h4>
+      <form id="contratForm" class="space-y-4">
+        <input type="text" id="titre" placeholder="Titre du contrat" required 
+          class="w-full p-3 rounded bg-gray-800 border border-yellow-600 text-gray-200" />
+        <input type="date" id="date" required 
+          class="w-full p-3 rounded bg-gray-800 border border-yellow-600 text-gray-200" />
+        <textarea id="contenu" placeholder="Détail du contrat" rows="4" required 
+          class="w-full p-3 rounded bg-gray-800 border border-yellow-600 text-gray-200"></textarea>
+        <button type="submit" 
+          class="w-full bg-yellow-500 text-gray-900 font-bold py-3 rounded hover:bg-yellow-400 transition">
+          Ajouter le Contrat
+        </button>
+      </form>
+    </div>
+
+    <!-- Liste des contrats ajoutés -->
+    <div id="listeContrats" class="mt-12 space-y-6"></div>
   </section>
+
+  <!-- Script pour envoyer les contrats vers Google Sheets -->
+  <script>
+    const form = document.getElementById('contratForm');
+    const listeContrats = document.getElementById('listeContrats');
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      // Récupération des données
+      const data = {
+        titre: document.getElementById('titre').value,
+        date: document.getElementById('date').value,
+        contenu: document.getElementById('contenu').value
+      };
+
+      // URL de ton Web App Google Script (corrige bien ici avec TON lien /exec)
+      const url = "https://script.google.com/macros/s/AKfycbxfVVJezv7CQg2miNVhvfAQ1O9SRJ1eU-yATW1GE1ES3jp8DhJjkSsyWOAsHruJWcZ9gQ/exec";
+
+      // Envoi vers Google Sheets
+      fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data)
+      })
+      .then(res => res.json())
+      .then(response => {
+        alert("Contrat ajouté avec succès !");
+
+        // Afficher directement le contrat sur la page
+        const contratDiv = document.createElement('div');
+        contratDiv.classList = "bg-gray-900 border border-yellow-600 p-6 rounded-lg shadow";
+        contratDiv.innerHTML = `
+          <h5 class="text-xl font-bold text-yellow-400">${data.titre}</h5>
+          <p class="text-sm text-gray-400 mb-2">Date : ${data.date}</p>
+          <p>${data.contenu}</p>
+        `;
+        listeContrats.appendChild(contratDiv);
+
+        form.reset();
+      })
+      .catch(err => {
+        alert("Erreur lors de l’ajout : " + err);
+      });
+    });
+  </script>
 
   <!-- Règlement -->
   <section id="regles" class="py-20 container mx-auto px-6">
@@ -95,11 +156,10 @@
     </div>
   </section>
   
-    <!-- Formation -->
+  <!-- Formation -->
   <section id="formation" class="py-20 container mx-auto px-6">
     <h3 class="text-3xl font-bold text-center text-yellow-500 mb-12">Formation des Nouvelles Recrues</h3>
     <div class="bg-gray-900 border border-yellow-600 p-8 rounded-lg shadow leading-relaxed text-gray-300 space-y-6">
-      
       <p>
         Chaque nouveau citoyen Solaris doit suivre un processus rigoureux afin de rejoindre l’Ordre. 
         La formation garantit discipline, loyauté et maîtrise des arts solaires.
@@ -107,9 +167,9 @@
 
       <h4 class="text-2xl text-yellow-400">1. Évaluation Initiale</h4>
       <ul class="list-disc ml-6 space-y-2">
-        <li>Test psychologique (Roll +50 requis pour le test psychologique).</li>
+        <li>Test psychologique (Roll +50 requis).</li>
         <li>Test physique (Peut être retenté une seconde fois si échoué).</li>
-        <li>En cas d’échec, passage d’un test de logique et de négociation.</li>
+        <li>En cas d’échec, test de logique et de négociation.</li>
       </ul>
 
       <h4 class="text-2xl text-yellow-400">2. Apprentissage des Bases</h4>
@@ -129,13 +189,11 @@
       <h4 class="text-2xl text-yellow-400">4. Formation Accompagnée</h4>
       <p>
         Chaque nouvelle recrue est placée sous la tutelle d’un garant (gradé supérieur ou recrue expérimentée) 
-        pour une durée d’environ 1 mois, (soit 45min ou 2h) avec des entrainements, 
+        pour une durée d’environ 1 mois (séances de 45 min à 2h), 
         axées sur la maîtrise du combat et du mana.
       </p>
-
     </div>
   </section>
-
 
   <!-- Footer -->
   <footer class="bg-gray-900 border-t border-yellow-600 text-gray-500 py-6 text-center">
